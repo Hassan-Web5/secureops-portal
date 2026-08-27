@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SecureOps Command Center | SOC Platform</title>
+  <title>CyberGuard SOC | Enterprise Security Operations Center</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Bootstrap 5 CSS -->
@@ -17,269 +17,414 @@
 
   <style>
     :root {
-      --bg-dark: #090d16;
-      --card-bg: #111827;
-      --card-border: #1f293d;
-      --accent-blue: #0ea5e9;
-      --accent-glow: rgba(14, 165, 233, 0.15);
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
+      --bg-body: #060911;
+      --panel-bg: #0d121f;
+      --panel-card: #121929;
+      --border-color: #1e293b;
+      --cyan-glow: #0ea5e9;
+      --red-alert: #ef4444;
+      --green-status: #10b981;
+      --amber-warn: #f59e0b;
+      --text-muted: #94a3b8;
     }
 
+    * { box-sizing: border-box; }
     body {
-      background-color: var(--bg-dark);
-      color: var(--text-main);
+      background-color: var(--bg-body);
+      color: #f8fafc;
       font-family: 'Plus Jakarta Sans', sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-    /* Custom Glassmorphic Cards */
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-body); }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+    /* Custom Glass & Border Panels */
+    .soc-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      position: relative;
+    }
+
     .soc-card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-      transition: border-color 0.2s;
-    }
-    .soc-card:hover { border-color: #374151; }
-
-    /* Form Controls */
-    .form-control, .form-select {
-      background-color: #0b111e;
-      border: 1px solid var(--card-border);
-      color: #fff;
-      font-size: 0.9rem;
-    }
-    .form-control:focus, .form-select:focus {
-      background-color: #0b111e;
-      border-color: var(--accent-blue);
-      color: #fff;
-      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: var(--panel-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
     }
 
-    /* Buttons */
-    .btn-cyan {
-      background-color: #0284c7;
-      color: #fff;
-      font-weight: 600;
+    /* Metric Cards */
+    .metric-card {
+      background: linear-gradient(145deg, #101726, #0c101d);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+    }
+    .metric-card.border-cyan::before { background: var(--cyan-glow); }
+    .metric-card.border-red::before { background: var(--red-alert); }
+    .metric-card.border-amber::before { background: var(--amber-warn); }
+    .metric-card.border-green::before { background: var(--green-status); }
+
+    /* Nav and Header */
+    .nav-tabs { border-bottom: 1px solid var(--border-color); }
+    .nav-tabs .nav-link {
+      color: var(--text-muted);
       border: none;
+      padding: 10px 18px;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
     }
-    .btn-cyan:hover { background-color: #0369a1; color: #fff; }
+    .nav-tabs .nav-link.active {
+      color: var(--cyan-glow);
+      background: transparent;
+      border-bottom: 2px solid var(--cyan-glow);
+    }
 
-    /* Interactive Map */
+    /* Interactive Map Fixes */
     #map {
-      height: 380px;
+      height: 440px;
       width: 100%;
       border-radius: 8px;
-      border: 1px solid var(--card-border);
+      z-index: 1;
     }
 
-    /* Metric Badges */
-    .metric-box {
-      background: #0d1322;
-      border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 12px;
+    /* Threat Indicator Pulse */
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+    .pulse-red { background-color: var(--red-alert); box-shadow: 0 0 8px var(--red-alert); }
+    .pulse-green { background-color: var(--green-status); box-shadow: 0 0 8px var(--green-status); }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
     }
 
-    pre {
-      background: #070a11;
-      color: #38bdf8;
-      border: 1px solid #1e293b;
+    /* Terminal-style structured logs */
+    .terminal-window {
+      background: #050811;
+      border: 1px solid #172033;
       border-radius: 6px;
-      font-size: 0.8rem;
+      color: #38bdf8;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      padding: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .form-control, .form-select {
+      background-color: #070b14;
+      border: 1px solid var(--border-color);
+      color: #f8fafc;
+      font-size: 0.88rem;
+    }
+    .form-control:focus, .form-select:focus {
+      background-color: #070b14;
+      border-color: var(--cyan-glow);
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
     }
   </style>
 </head>
-<body class="p-2 p-md-4">
+<body class="p-2 p-md-3">
 
   <div class="container-fluid max-w-7xl">
-    
-    <!-- TOP NAVIGATION BAR -->
-    <header class="soc-card px-4 py-3 mb-4 d-flex justify-content-between align-items-center">
+
+    <!-- TOP HEADER -->
+    <header class="soc-panel p-3 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-3">
       <div class="d-flex align-items-center gap-3">
-        <div class="bg-primary bg-opacity-10 p-2 rounded text-info fs-4">
+        <div class="p-2 bg-dark rounded border border-info border-opacity-25 text-info fs-4">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div>
-          <h4 class="mb-0 fw-bold tracking-wide">SecureOps <span class="badge bg-info text-dark fs-6">SOC v2.4</span></h4>
-          <small class="text-secondary">Security Incident & Threat Intelligence Dashboard</small>
+          <div class="d-flex align-items-center gap-2">
+            <h5 class="mb-0 fw-bold tracking-wide">CyberGuard SOC</h5>
+            <span class="badge bg-primary bg-opacity-10 text-info border border-info border-opacity-25 font-mono">v3.1 SECURE-EDITION</span>
+          </div>
+          <small class="text-secondary font-mono">Real-Time Threat Intelligence & Spatial Command Center</small>
         </div>
       </div>
 
-      <div id="user-session" class="d-none align-items-center gap-3">
-        <span id="session-badge" class="badge font-mono px-3 py-2"></span>
-        <button class="btn btn-sm btn-outline-danger" onclick="logout()">
-          <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Terminate Session
+      <!-- User Session Controls -->
+      <div id="user-session" class="d-none align-items-center gap-2">
+        <div class="text-end me-2 font-mono">
+          <div id="session-user" class="fw-semibold small text-light"></div>
+          <span id="session-role" class="badge"></span>
+        </div>
+        <button class="btn btn-sm btn-outline-danger font-mono" onclick="logout()">
+          <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> Terminate
         </button>
       </div>
     </header>
 
-    <!-- VIEW 1: AUTHENTICATION PORTAL -->
+    <!-- 1. LOGIN PORTAL SECTION -->
     <div id="login-section" class="row justify-content-center my-5">
-      <div class="col-12 col-sm-8 col-md-5 col-lg-4">
-        <div class="soc-card p-4">
+      <div class="col-12 col-sm-9 col-md-6 col-lg-4">
+        <div class="soc-panel p-4 shadow-lg">
           <div class="text-center mb-4">
-            <i class="fa-solid fa-lock text-info fs-1 mb-2"></i>
-            <h5 class="fw-bold">Security Gateway Login</h5>
-            <p class="text-secondary small">Authenticate to access SOC telemetry & spatial data</p>
+            <div class="d-inline-block p-3 rounded-circle bg-dark border border-secondary mb-3">
+              <i class="fa-solid fa-fingerprint text-info fs-1"></i>
+            </div>
+            <h5 class="fw-bold">Security Gateway Verification</h5>
+            <p class="text-secondary small">Authenticate role-based identity to decrypt telemetry</p>
           </div>
 
-          <div id="auth-alert" class="alert alert-danger d-none py-2 small" role="alert"></div>
+          <div id="auth-alert" class="alert alert-danger d-none py-2 small font-mono" role="alert"></div>
 
           <form id="login-form" onsubmit="handleLogin(event)">
             <div class="mb-3">
-              <label class="form-label text-secondary small fw-semibold">Email Identity</label>
+              <label class="form-label text-secondary small fw-semibold">User Principal Identity</label>
               <div class="input-group">
-                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-envelope"></i></span>
-                <input type="email" id="email" class="form-control" placeholder="admin@example.com" required />
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-at"></i></span>
+                <input type="email" id="email" class="form-control font-mono" placeholder="admin@example.com" required />
               </div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label text-secondary small fw-semibold">Passphrase Key</label>
+              <label class="form-label text-secondary small fw-semibold">Master Passphrase</label>
               <div class="input-group">
                 <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-key"></i></span>
-                <input type="password" id="password" class="form-control" placeholder="••••••••" required />
+                <input type="password" id="password" class="form-control font-mono" placeholder="••••••••" required />
               </div>
               <div id="pw-error" class="text-danger small mt-1 font-mono"></div>
             </div>
 
-            <button type="submit" class="btn btn-cyan w-100 py-2">Authenticate Identity</button>
+            <button type="submit" class="btn btn-info w-100 fw-bold text-dark py-2">
+              <i class="fa-solid fa-lock-open me-1"></i> Verify & Authenticate
+            </button>
           </form>
 
           <div class="mt-4 pt-3 border-top border-secondary text-secondary small">
-            <span class="text-info fw-bold"><i class="fa-solid fa-circle-info me-1"></i> Authorized Demo Roles:</span>
-            <ul class="mb-0 mt-1 ps-3 font-mono">
-              <li>Admin: <code>admin@example.com</code> | <code>Admin123!</code></li>
-              <li>Analyst: <code>user@example.com</code> | <code>User123!</code></li>
-            </ul>
+            <span class="text-info fw-bold"><i class="fa-solid fa-shield-cat me-1"></i> Test Role Credentials:</span>
+            <div class="d-flex justify-content-between mt-2 font-mono" style="font-size: 0.78rem;">
+              <div>
+                <span class="text-warning">● Admin Role:</span><br/>
+                <code>admin@example.com</code><br/>
+                <code>Admin123!</code>
+              </div>
+              <div>
+                <span class="text-info">● Analyst Role:</span><br/>
+                <code>user@example.com</code><br/>
+                <code>User123!</code>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- VIEW 2: SOC TELEMETRY DASHBOARD -->
+    <!-- 2. MAIN ACTIVE DASHBOARD SECTION -->
     <div id="dashboard-section" class="d-none">
       
-      <!-- TOP METRIC CARDS -->
-      <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-          <div class="metric-box">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-secondary small fw-semibold">ACTIVE ASSETS</span>
-              <i class="fa-solid fa-server text-info"></i>
+      <!-- TOP METRIC OVERVIEW CARDS -->
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+          <div class="metric-card border-cyan">
+            <div class="d-flex justify-content-between align-items-center text-secondary small font-mono">
+              <span>PROTECTED NODES</span>
+              <i class="fa-solid fa-network-wired text-info"></i>
             </div>
-            <h3 class="fw-bold my-1 text-info">24</h3>
-            <span class="badge bg-success-subtle text-success small">100% Operational</span>
+            <h3 class="fw-bold text-light my-1 font-mono">18 / 18</h3>
+            <span class="small text-success"><i class="fa-solid fa-check-circle me-1"></i> All Gateways Online</span>
           </div>
         </div>
 
-        <div class="col-6 col-md-3">
-          <div class="metric-box">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-secondary small fw-semibold">THREAT INCIDENTS</span>
-              <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+        <div class="col-6 col-lg-3">
+          <div class="metric-card border-red">
+            <div class="d-flex justify-content-between align-items-center text-secondary small font-mono">
+              <span>ACTIVE THREATS</span>
+              <span class="pulse-dot pulse-red"></span>
             </div>
-            <h3 class="fw-bold my-1 text-danger" id="threat-count">2</h3>
-            <span class="badge bg-danger-subtle text-danger small">Action Required</span>
+            <h3 class="fw-bold text-danger my-1 font-mono" id="active-threat-count">3</h3>
+            <span class="small text-danger" id="threat-status-label">Immediate Triage Needed</span>
           </div>
         </div>
 
-        <div class="col-6 col-md-3">
-          <div class="metric-box">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-secondary small fw-semibold">BLOCKED ATTACKS</span>
+        <div class="col-6 col-lg-3">
+          <div class="metric-card border-amber">
+            <div class="d-flex justify-content-between align-items-center text-secondary small font-mono">
+              <span>ATTACKS MITIGATED</span>
               <i class="fa-solid fa-shield-virus text-warning"></i>
             </div>
-            <h3 class="fw-bold my-1 text-warning">1,492</h3>
-            <span class="text-secondary small">Last 24 hours</span>
+            <h3 class="fw-bold text-warning my-1 font-mono" id="mitigated-count">2,841</h3>
+            <span class="small text-secondary font-mono">WAF & STRIDE Guard Active</span>
           </div>
         </div>
 
-        <div class="col-6 col-md-3">
-          <div class="metric-box">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-secondary small fw-semibold">SYSTEM HEALTH</span>
-              <i class="fa-solid fa-circle-check text-success"></i>
+        <div class="col-6 col-lg-3">
+          <div class="metric-card border-green">
+            <div class="d-flex justify-content-between align-items-center text-secondary small font-mono">
+              <span>RBAC INTEGRITY</span>
+              <i class="fa-solid fa-id-badge text-success"></i>
             </div>
-            <h3 class="fw-bold my-1 text-success">99.98%</h3>
-            <span class="text-secondary small">Zero Trust Active</span>
+            <h3 class="fw-bold text-success my-1 font-mono">ENFORCED</h3>
+            <span class="small text-secondary font-mono">Zero Trust Protocol</span>
           </div>
         </div>
       </div>
 
-      <!-- MAIN CONTENT ROW -->
-      <div class="row g-4">
+      <!-- MAIN SPLIT WORKSPACE -->
+      <div class="row g-3">
         
-        <!-- LEFT: SPATIAL INCIDENT MAP -->
+        <!-- LEFT WORKSPACE: SPATIAL MAP & INCIDENT FEED -->
         <div class="col-xl-8">
-          <div class="soc-card p-3 h-100">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
-              <h5 class="fw-bold mb-0 text-info"><i class="fa-solid fa-map-location-dot me-2"></i>Spatial Incident Triage</h5>
+          <div class="soc-panel p-3 mb-3">
+            
+            <!-- Map Controls Header -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center pb-2 mb-2 border-bottom border-secondary gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <h6 class="mb-0 fw-bold text-info"><i class="fa-solid fa-earth-americas me-2"></i>Live Geospatial Incident Radar</h6>
+                <span class="badge bg-dark border border-secondary text-secondary font-mono">Leaflet + OSM</span>
+              </div>
+              
               <div class="d-flex gap-2">
-                <input type="text" id="geo-search" class="form-control form-control-sm" placeholder="Search city (e.g., London)..." style="width: 200px;">
-                <button class="btn btn-sm btn-cyan" onclick="searchAddress()"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <select id="map-filter" class="form-select form-select-sm font-mono" style="width: 150px;" onchange="filterMapMarkers(this.value)">
+                  <option value="ALL">All Nodes</option>
+                  <option value="CRITICAL">Critical Alerts</option>
+                  <option value="DATACENTER">Data Centers</option>
+                </select>
+                
+                <input type="text" id="geo-search" class="form-control form-control-sm font-mono" placeholder="Nominatim search (e.g., London)..." style="width: 180px;">
+                <button class="btn btn-sm btn-info text-dark" onclick="searchAddress()"><i class="fa-solid fa-magnifying-glass"></i></button>
               </div>
             </div>
 
+            <!-- Leaflet Map Container -->
             <div id="map"></div>
-            
-            <div class="d-flex justify-content-between align-items-center mt-2 small text-secondary">
-              <span id="click-coords" class="font-mono text-info">Click map coordinates for analysis</span>
-              <span>© <a href="https://www.openstreetmap.org/copyright" target="_blank" class="text-secondary">OpenStreetMap</a></span>
+
+            <div class="d-flex justify-content-between align-items-center mt-2 small font-mono text-secondary">
+              <span id="click-coords" class="text-info"><i class="fa-solid fa-crosshairs me-1"></i>Click anywhere on map to inspect coordinates</span>
+              <span>© <a href="https://www.openstreetmap.org/copyright" target="_blank" class="text-secondary">OpenStreetMap Contributors</a></span>
+            </div>
+          </div>
+
+          <!-- INCIDENT TRIAGE TABLE -->
+          <div class="soc-panel p-3">
+            <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-list-check me-2"></i>Active Threat Queue & Remediation</h6>
+            <div class="table-responsive">
+              <table class="table table-dark table-hover align-middle mb-0 font-mono" style="font-size: 0.82rem;">
+                <thead class="text-secondary">
+                  <tr>
+                    <th>INCIDENT ID</th>
+                    <th>THREAT VECTOR</th>
+                    <th>TARGET ASSET</th>
+                    <th>SEVERITY</th>
+                    <th>ACTION</th>
+                  </tr>
+                </thead>
+                <tbody id="incident-table-body">
+                  <!-- Dynamically Rendered -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT: CONTROL PANELS & ACTIONS -->
+        <!-- RIGHT WORKSPACE: TOOLS, CRYPTO & ADMIN -->
         <div class="col-xl-4">
-          <div class="d-flex flex-column gap-3">
-            
-            <!-- ADMIN RESTRICTED AREA -->
-            <div id="admin-panel" class="soc-card p-3 border-warning d-none">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="fw-bold text-warning mb-0"><i class="fa-solid fa-user-shield me-2"></i>Admin Master Controls</h6>
-                <span class="badge bg-warning text-dark font-mono">RBAC: Level 3</span>
-              </div>
-              <p class="small text-secondary mb-3">Privileged administrative area for key revocation and user permission management.</p>
-              <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-outline-warning w-100" onclick="triggerAdminAction('Keys Rotated')"><i class="fa-solid fa-rotate me-1"></i> Rotate Secret Keys</button>
-                <button class="btn btn-sm btn-outline-danger w-100" onclick="triggerAdminAction('Lockdown Initiated')"><i class="fa-solid fa-ban me-1"></i> Emergency Lockdown</button>
-              </div>
+          
+          <!-- ADMIN RESTRICTED CONTROL PANEL (RBAC) -->
+          <div id="admin-panel" class="soc-panel p-3 mb-3 border-warning d-none">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="fw-bold text-warning mb-0"><i class="fa-solid fa-user-gear me-2"></i>Admin Master Console</h6>
+              <span class="badge bg-warning text-dark font-mono">RBAC: LEVEL 3</span>
             </div>
-
-            <!-- ANALYST RESTRICTION NOTICE -->
-            <div id="user-restricted-panel" class="soc-card p-3 border-secondary d-none">
-              <div class="d-flex align-items-center gap-2 text-secondary">
-                <i class="fa-solid fa-shield text-info"></i>
-                <h6 class="mb-0 fw-semibold text-light">Analyst Mode Active</h6>
-              </div>
-              <p class="small text-secondary mb-0 mt-1">Admin configuration functions are locked under Role-Based Access Controls.</p>
+            <p class="small text-secondary mb-3">Privileged administrative actions available exclusively to authorized admin users.</p>
+            <div class="d-grid gap-2 font-mono">
+              <button class="btn btn-sm btn-outline-warning text-start" onclick="adminAction('Rotate Master Secrets (SSDF PW.1)')">
+                <i class="fa-solid fa-arrows-rotate me-2"></i> Rotate Cryptographic Keys
+              </button>
+              <button class="btn btn-sm btn-outline-info text-start" onclick="adminAction('Flushed Revoked Token Blacklist')">
+                <i class="fa-solid fa-broom me-2"></i> Flush Stale JWT Tokens
+              </button>
+              <button class="btn btn-sm btn-outline-danger text-start" onclick="adminAction('Emergency Quarantine Triggered')">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i> Global Port Lockdown
+              </button>
             </div>
-
-            <!-- CRYPTOGRAPHIC INTEGRITY ENGINE -->
-            <div class="soc-card p-3">
-              <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-fingerprint me-2"></i>SHA-256 Integrity Verifier</h6>
-              <p class="small text-secondary mb-2">Computes standard 256-bit hashes using native Web Crypto API.</p>
-              <input type="text" id="crypto-input" class="form-control form-control-sm mb-2 font-mono" value="Incident Report Payload #9021" />
-              <button class="btn btn-sm btn-cyan w-100 mb-2" onclick="computeHash()"><i class="fa-solid fa-hashtag me-1"></i> Generate Cryptographic Hash</button>
-              <pre id="crypto-output" class="font-mono p-2 mb-0 text-wrap">Waiting for input...</pre>
-            </div>
-
           </div>
+
+          <!-- ANALYST NOTICE IF NON-ADMIN -->
+          <div id="analyst-panel" class="soc-panel p-3 mb-3 border-secondary d-none">
+            <div class="d-flex align-items-center gap-2 text-info mb-1">
+              <i class="fa-solid fa-lock"></i>
+              <h6 class="mb-0 fw-semibold">Analyst Role Active</h6>
+            </div>
+            <p class="small text-secondary mb-0">System configuration controls are hidden in accordance with least-privilege security policy (NIST SSDF).</p>
+          </div>
+
+          <!-- STRIDE THREAT SIMULATOR -->
+          <div class="soc-panel p-3 mb-3">
+            <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-vial me-2"></i>STRIDE Threat Simulator</h6>
+            <p class="small text-secondary mb-2">Simulate real-time vector analysis across system components.</p>
+            
+            <div class="mb-2">
+              <select id="stride-select" class="form-select form-select-sm font-mono" onchange="runStrideCheck(this.value)">
+                <option value="">-- Select STRIDE Category --</option>
+                <option value="S">S — Spoofing (Token / Credential Theft)</option>
+                <option value="T">T — Tampering (Parameter / Price Modification)</option>
+                <option value="R">R — Repudiation (Unlogged Transactions)</option>
+                <option value="I">I — Information Disclosure (Leaked Logs)</option>
+                <option value="D">D — Denial of Service (Request Flooding)</option>
+                <option value="E">E — Elevation of Privilege (RBAC Bypass)</option>
+              </select>
+            </div>
+
+            <div id="stride-result" class="p-2 bg-dark rounded border border-secondary font-mono small text-secondary">
+              Select a STRIDE threat to review automated control mitigations.
+            </div>
+          </div>
+
+          <!-- CRYPTOGRAPHIC DATA INTEGRITY VERIFIER -->
+          <div class="soc-panel p-3 mb-3">
+            <h6 class="fw-bold text-info mb-2"><i class="fa-solid fa-fingerprint me-2"></i>SHA-256 Integrity Engine</h6>
+            <p class="small text-secondary mb-2">Live client-side hashing via Web Crypto API (NIST Compliant).</p>
+            
+            <div class="input-group input-group-sm mb-2">
+              <input type="text" id="hash-input" class="form-control font-mono" value="Incident-Telemetry-Record-7701" placeholder="Type text to hash..." />
+              <button class="btn btn-info text-dark fw-bold" onclick="generateHash()">Digest</button>
+            </div>
+            
+            <div class="terminal-window" id="hash-output" style="max-height: 80px; word-break: break-all;">
+              Click 'Digest' to compute SHA-256 hash...
+            </div>
+          </div>
+
         </div>
 
-        <!-- BOTTOM: STRUCTURED AUDIT LOG STREAM -->
+        <!-- FULL-WIDTH AUDIT LOG STREAM -->
         <div class="col-12">
-          <div class="soc-card p-3">
+          <div class="soc-panel p-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="fw-bold text-info mb-0"><i class="fa-solid fa-terminal me-2"></i>Sanitized Structured JSON Audit Stream</h6>
-              <button class="btn btn-sm btn-outline-secondary" onclick="downloadLogs()"><i class="fa-solid fa-download me-1"></i> Export Logs</button>
+              <div class="d-flex align-items-center gap-2">
+                <span class="pulse-dot pulse-green"></span>
+                <h6 class="fw-bold text-info mb-0 font-mono">Live Structured Audit Event Stream (Sanitized JSON)</h6>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary font-mono" onclick="downloadLogs()">
+                <i class="fa-solid fa-file-export me-1"></i> Export Audit JSON
+              </button>
             </div>
-            <pre id="audit-log" class="font-mono mb-0 p-3" style="max-height: 160px; overflow-y: auto;">{"timestamp": "2026-08-27T10:00:00.000Z", "event": "SYSTEM_READY", "security_baseline": "ENFORCED"}</pre>
+            <div class="terminal-window" id="audit-stream" style="max-height: 180px;">
+              // Initializing CyberGuard Security Subsystem...
+            </div>
           </div>
         </div>
 
@@ -288,32 +433,39 @@
 
   </div>
 
-  <!-- Leaflet JS & App Logic -->
+  <!-- Leaflet JS & Core Logic -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     let map = null;
-    let markers = [];
-    const logHistory = [];
+    let markersLayer = null;
+    const auditLogs = [];
 
-    // Structured JSON Logger with Sensitive Data Filter
-    function logEvent(event, details = {}) {
-      const sanitized = { ...details };
+    // Synthetic Incident Dataset
+    const incidentData = [
+      { id: "INC-8091", vector: "SQL Injection Probe", asset: "Primary Database (DB-01)", severity: "CRITICAL", lat: 51.505, lon: -0.09, city: "London Hub", status: "Active" },
+      { id: "INC-8092", vector: "Brute Force SSH", asset: "Auth Gateway (SRV-AUTH)", severity: "HIGH", lat: 48.8566, lon: 2.3522, city: "Paris Node", status: "Active" },
+      { id: "INC-8093", vector: "Unsanitized Header", asset: "Public Edge Web UI", severity: "MEDIUM", lat: 52.52, lon: 13.405, city: "Berlin DC", status: "Active" }
+    ];
+
+    // Structured JSON Audit Logger (Strips secrets and PII)
+    function logEvent(eventType, payload = {}) {
+      const sanitized = { ...payload };
       delete sanitized.password;
       delete sanitized.token;
       delete sanitized.secret;
 
       const entry = {
         timestamp: new Date().toISOString(),
-        event: event,
+        event: eventType,
         ...sanitized
       };
 
-      logHistory.unshift(entry);
-      const logBox = document.getElementById('audit-log');
-      logBox.innerText = JSON.stringify(entry) + "\n" + logBox.innerText;
+      auditLogs.unshift(entry);
+      const stream = document.getElementById('audit-stream');
+      stream.innerText = JSON.stringify(entry) + "\n" + stream.innerText;
     }
 
-    // Authentication Logic with Validation
+    // Login Authentication & Validation
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
@@ -324,46 +476,51 @@
       pwError.innerText = "";
       alertBox.classList.add('d-none');
 
-      // Security Input Validation
+      // Validation check
       if (password.length < 8) {
-        pwError.innerText = "Validation Error: Passphrase must be at least 8 characters.";
-        logEvent("VALIDATION_FAILED", { reason: "PASSWORD_LENGTH_LT_8" });
+        pwError.innerText = "Validation Warning: Password must be at least 8 characters.";
+        logEvent("VALIDATION_FAILED", { field: "password", constraint: "MIN_LENGTH_8" });
         return;
       }
 
-      // Safe Role Gate Check
+      // Role Authentication
       if (email === "admin@example.com" && password === "Admin123!") {
-        startSession(email, "admin");
+        initSession(email, "ADMIN");
       } else if (email === "user@example.com" && password === "User123!") {
-        startSession(email, "analyst");
+        initSession(email, "ANALYST");
       } else {
-        alertBox.innerText = "Safe Error: Unable to authenticate with provided credentials.";
+        alertBox.innerText = "Authentication Failure: Invalid credentials provided.";
         alertBox.classList.remove('d-none');
-        logEvent("AUTH_FAILED", { attempt_identity: email });
+        logEvent("AUTH_FAILURE", { identity: email });
       }
     }
 
-    function startSession(email, role) {
+    function initSession(email, role) {
       document.getElementById('login-section').classList.add('d-none');
       document.getElementById('dashboard-section').classList.remove('d-none');
       document.getElementById('user-session').classList.remove('d-none');
       document.getElementById('user-session').classList.add('d-flex');
 
-      const badge = document.getElementById('session-badge');
-      badge.innerText = `${email} (${role.toUpperCase()})`;
-      badge.className = `badge font-mono px-3 py-2 ${role === 'admin' ? 'bg-warning text-dark' : 'bg-info text-dark'}`;
+      document.getElementById('session-user').innerText = email;
+      const roleBadge = document.getElementById('session-role');
+      roleBadge.innerText = `ROLE: ${role}`;
+      roleBadge.className = `badge font-mono ${role === 'ADMIN' ? 'bg-warning text-dark' : 'bg-info text-dark'}`;
 
-      if (role === 'admin') {
+      // RBAC Gate
+      if (role === 'ADMIN') {
         document.getElementById('admin-panel').classList.remove('d-none');
-        document.getElementById('user-restricted-panel').classList.add('d-none');
+        document.getElementById('analyst-panel').classList.add('d-none');
       } else {
         document.getElementById('admin-panel').classList.add('d-none');
-        document.getElementById('user-restricted-panel').classList.remove('d-none');
+        document.getElementById('analyst-panel').classList.remove('d-none');
       }
 
-      logEvent("SESSION_AUTHENTICATED", { identity: email, role: role });
-      initMap();
-      computeHash();
+      logEvent("SESSION_AUTHENTICATED", { user: email, role: role });
+      
+      // Initialize Dashboard Components
+      renderIncidentTable();
+      setTimeout(initMap, 200); // Allow DOM layout to complete
+      generateHash();
     }
 
     function logout() {
@@ -374,100 +531,182 @@
       logEvent("SESSION_TERMINATED");
     }
 
-    // Leaflet Interactive OpenStreetMap
+    // Render Incident Queue Table
+    function renderIncidentTable() {
+      const tbody = document.getElementById('incident-table-body');
+      tbody.innerHTML = "";
+
+      incidentData.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="text-info fw-bold">${item.id}</td>
+          <td>${item.vector}</td>
+          <td class="text-secondary">${item.asset}</td>
+          <td>
+            <span class="badge ${item.severity === 'CRITICAL' ? 'bg-danger' : item.severity === 'HIGH' ? 'bg-warning text-dark' : 'bg-secondary'}">
+              ${item.severity}
+            </span>
+          </td>
+          <td>
+            ${item.status === 'Active' ? 
+              `<button class="btn btn-xs btn-outline-info py-0 px-2" onclick="focusIncident('${item.id}', ${item.lat}, ${item.lon})"><i class="fa-solid fa-crosshairs me-1"></i> Triage</button>
+               <button class="btn btn-xs btn-outline-success py-0 px-2 ms-1" onclick="mitigateIncident('${item.id}')"><i class="fa-solid fa-shield-check"></i> Fix</button>` 
+              : `<span class="text-success"><i class="fa-solid fa-check me-1"></i> Mitigated</span>`
+            }
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // OpenStreetMap & Leaflet Integration
     function initMap() {
       if (map) return;
 
-      map = L.map('map').setView([51.505, -0.09], 12);
+      // Default view centered on Europe Region
+      map = L.map('map').setView([50.0, 5.0], 4);
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
+        maxZoom: 18,
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
 
-      // Synthetic Incidents & Assets
-      const assets = [
-        { id: 1, name: "Data Center Alpha", lat: 51.505, lon: -0.09, status: "Active", type: "Infrastructure" },
-        { id: 2, name: "Critical Incident: Rogue SSH", lat: 51.52, lon: -0.11, status: "Investigating", type: "Threat" }
-      ];
+      markersLayer = L.layerGroup().addTo(map);
+      populateMapMarkers();
 
-      assets.forEach(asset => {
-        const marker = L.marker([asset.lat, asset.lon]).addTo(map);
+      // Click event for coordinates
+      map.on('click', function(e) {
+        document.getElementById('click-coords').innerHTML = 
+          `<i class="fa-solid fa-location-crosshairs text-warning me-1"></i> Latitude: <b>${e.latlng.lat.toFixed(4)}</b> | Longitude: <b>${e.latlng.lng.toFixed(4)}</b>`;
+      });
+    }
+
+    function populateMapMarkers(filter = "ALL") {
+      markersLayer.clearLayers();
+
+      incidentData.forEach(item => {
+        if (filter === "CRITICAL" && item.severity !== "CRITICAL") return;
+
+        const marker = L.marker([item.lat, item.lon]);
         marker.bindPopup(`
-          <div style="color: #0f172a">
-            <strong>${asset.name}</strong><br/>
-            Type: ${asset.type}<br/>
-            Status: <b>${asset.status}</b><br/>
-            <button onclick="mitigateThreat(${asset.id})" style="background:#0284c7;color:#fff;border:none;padding:4px 8px;border-radius:4px;margin-top:6px;cursor:pointer;">Mitigate Alert</button>
+          <div style="font-family:sans-serif; color:#0f172a;">
+            <strong style="color:#0284c7;">${item.id} — ${item.city}</strong><br/>
+            Vector: <b>${item.vector}</b><br/>
+            Severity: <span style="color:${item.severity === 'CRITICAL' ? 'red' : 'orange'}; font-weight:bold;">${item.severity}</span><br/>
+            Status: ${item.status}<br/>
+            ${item.status === 'Active' ? `<button onclick="mitigateIncident('${item.id}')" style="background:#0284c7;color:#fff;border:none;padding:4px 8px;border-radius:4px;margin-top:5px;cursor:pointer;">Mitigate Alert</button>` : ''}
           </div>
         `);
-        markers.push(marker);
-      });
-
-      map.on('click', e => {
-        document.getElementById('click-coords').innerText = 
-          `Target Coordinates: Lat ${e.latlng.lat.toFixed(4)}, Lon ${e.latlng.lng.toFixed(4)}`;
+        markersLayer.addLayer(marker);
       });
     }
 
-    function mitigateThreat(id) {
-      document.getElementById('threat-count').innerText = "1";
-      logEvent("THREAT_MITIGATED", { incident_id: id, status: "CONTAINED" });
-      alert("Incident successfully mitigated and contained.");
+    function filterMapMarkers(type) {
+      populateMapMarkers(type);
+      logEvent("MAP_FILTER_CHANGED", { filter: type });
     }
 
-    // Nominatim Geocoding API with Rate-Limiting Policy Compliance
-    let lastSearch = 0;
+    function focusIncident(id, lat, lon) {
+      map.flyTo([lat, lon], 8, { duration: 1.5 });
+      logEvent("INCIDENT_INSPECTED", { incident_id: id, coordinates: `${lat},${lon}` });
+    }
+
+    function mitigateIncident(id) {
+      const item = incidentData.find(i => i.id === id);
+      if (item) {
+        item.status = "Mitigated";
+        renderIncidentTable();
+        populateMapMarkers();
+        
+        // Update metric
+        const activeRemaining = incidentData.filter(i => i.status === 'Active').length;
+        document.getElementById('active-threat-count').innerText = activeRemaining;
+        if(activeRemaining === 0) {
+          document.getElementById('threat-status-label').innerText = "All Threats Contained";
+          document.getElementById('threat-status-label').className = "small text-success";
+        }
+        
+        logEvent("THREAT_CONTAINED_SUCCESS", { incident: id, vector: item.vector });
+        alert(`Incident ${id} successfully mitigated via automated firewall patch.`);
+      }
+    }
+
+    // Nominatim Geocoding API (Max 1 req/sec)
+    let lastQueryTime = 0;
     async function searchAddress() {
       const query = document.getElementById('geo-search').value.trim();
       if (!query) return;
 
       const now = Date.now();
-      if (now - lastSearch < 1000) {
-        alert("Usage Policy: Rate limit is 1 query per second.");
+      if (now - lastQueryTime < 1000) {
+        alert("Nominatim Policy: Rate limited to 1 query per second.");
         return;
       }
-      lastSearch = now;
+      lastQueryTime = now;
 
       try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`, {
-          headers: { 'User-Agent': 'SecureOpsDashboardProject/2.0 (contact@internal-audit.local)' }
+          headers: { 'User-Agent': 'CyberGuardSOC/3.0 (internal-demo-student)' }
         });
         const data = await res.json();
         if (data && data.length > 0) {
           const { lat, lon, display_name } = data[0];
-          map.flyTo([lat, lon], 13);
-          L.marker([lat, lon]).addTo(map).bindPopup(`<b>Search Location:</b><br/>${display_name}`).openPopup();
-          logEvent("GEOCODE_QUERY_SUCCESS", { query: query, coordinates: `${lat},${lon}` });
+          map.flyTo([lat, lon], 10);
+          L.marker([lat, lon]).addTo(map).bindPopup(`<b>Location:</b> ${display_name}`).openPopup();
+          logEvent("NOMINATIM_GEOCODE_SUCCESS", { query: query, lat: lat, lon: lon });
         } else {
-          alert("Location query not found.");
+          alert("Location not found.");
         }
       } catch (err) {
         console.error(err);
       }
     }
 
-    // Web Crypto API SHA-256 Engine
-    async function computeHash() {
-      const input = document.getElementById('crypto-input').value;
-      const msgBuffer = new TextEncoder().encode(input);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-      const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-      document.getElementById('crypto-output').innerText = `SHA-256 Digest:\n${hashHex}`;
+    // STRIDE Simulator Logic
+    function runStrideCheck(val) {
+      const box = document.getElementById('stride-result');
+      const strideMap = {
+        "S": "🛡️ <b>Spoofing Mitigation:</b> Enforce TLS 1.3, MFA, and short-lived signed JWT session tokens.",
+        "T": "🛡️ <b>Tampering Mitigation:</b> Recalculate prices and params server-side; verify SHA-256 payload digests.",
+        "R": "🛡️ <b>Repudiation Mitigation:</b> Append-only structured JSON audit logging with immutable timestamps.",
+        "I": "🛡️ <b>Information Disclosure:</b> Generic user errors; exclude internal stack traces and tokens from logs.",
+        "D": "🛡️ <b>Denial of Service:</b> Enforce rate limiting, API token quotas, and connection pooling.",
+        "E": "🛡️ <b>Elevation of Privilege:</b> Enforce server-side RBAC validation checks on all protected API endpoints."
+      };
+
+      if (strideMap[val]) {
+        box.innerHTML = strideMap[val];
+        logEvent("STRIDE_RULE_CONSULTED", { stride_category: val });
+      } else {
+        box.innerHTML = "Select a STRIDE threat to review automated control mitigations.";
+      }
     }
 
-    function triggerAdminAction(action) {
-      logEvent("ADMIN_ACTION_EXECUTED", { action: action });
-      alert(`Administrative Command Triggered: ${action}`);
+    // SHA-256 Web Crypto API
+    async function generateHash() {
+      const text = document.getElementById('hash-input').value;
+      const buffer = new TextEncoder().encode(text);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      document.getElementById('hash-output').innerHTML = 
+        `<span class="text-secondary">Input:</span> "${text}"\n<span class="text-info">SHA-256:</span> ${hashHex}`;
+    }
+
+    function adminAction(actionName) {
+      logEvent("ADMIN_PRIVILEGE_INVOKED", { action: actionName });
+      alert(`[ADMIN EXECUTION] ${actionName} executed successfully.`);
     }
 
     function downloadLogs() {
-      const blob = new Blob([JSON.stringify(logHistory, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `secureops-audit-${Date.now()}.json`;
-      a.click();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(auditLogs, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `cyberguard-audit-${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
     }
   </script>
 </body>
